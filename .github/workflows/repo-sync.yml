@@ -1,0 +1,69 @@
+# File: .github/workflows/repo-sync.yml
+name: 自动同步
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+  watch:
+    types: started
+  repository_dispatch:
+    types: repo-sync
+jobs:
+  repo-sync:
+    name: 创建脚本
+    runs-on: ubuntu-latest
+    steps:
+      - name: 设置githup信息
+        env:
+          email: ${{ secrets.EMAIL }}
+          username: ${{ secrets.USERNAME }}
+        run: |
+          git config --global user.name "$username"
+          git config --global user.email "$email"
+      - name: 设置SSH私钥信息
+        env:
+          MY_SCRIPTS_REPO_URL: github.com
+          MY_SCRIPTS: my_scripts
+          MY_SCRIPTS_HOST: jd_scripts_githup
+          MY_SCRIPTS_KEY: ${{ secrets.token_Private_Keys }}
+        run: |
+          mkdir -p ~/.ssh/ && chmod 700 ~/.ssh
+          echo "$MY_SCRIPTS_KEY" > ~/.ssh/$MY_SCRIPTS
+          chmod 600 ~/.ssh/$MY_SCRIPTS
+          echo -e "\n" >> ~/.ssh/config
+          echo -e "Host $MY_SCRIPTS_HOST" >> ~/.ssh/config
+          echo -e "\tHostname $MY_SCRIPTS_REPO_URL" >> ~/.ssh/config
+          echo -e "\tIdentityFile=~/.ssh/$MY_SCRIPTS" >> ~/.ssh/config
+          # echo -e "\n\nHost *\n StrictHostKeyChecking no\n" >> /etc/ssh/ssh_config
+          chmod 644 ~/.ssh/config
+          ssh-keyscan $MY_SCRIPTS_REPO_URL >> ~/.ssh/known_hosts
+      - name: 开始同步
+        run: |
+          shopt -s extglob
+          git clone https://github.com/qiandao-today/qiandao.git qiandao
+          cd qiandao
+          rm -rf .git
+          rm -rf .github
+          rm -rf .gitignore
+
+          cd ../
+          git clone -b qiandao git@jd_scripts_githup:ronghuaxueleng/qiandao.git my_qiandao
+          cp -rf ./qiandao/* ./my_qiandao
+          cd ./my_qiandao
+          git add .
+          git commit --allow-empty -m "up"
+          git push
+      - name: 同步到gitee
+        uses: Yikun/hub-mirror-action@master
+        with:
+          src: github/ronghuaxueleng
+          dst: gitee/getready
+          static_list: "qiandao"
+          dst_key: ${{ secrets.GITEE_KEY }}
+          dst_token: ${{ secrets.GITEE_TOKEN }}
+      - name: 删除过多的workflows
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ secrets.AUTH_PAT }}
+          repository: ${{ github.repository }}
+          retain_days: 1
