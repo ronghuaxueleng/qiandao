@@ -22,6 +22,9 @@ Qiandao —— 一个<b>HTTP请求定时任务自动执行框架</b> base on HAR
 [![docker image size][docker-image-size-image]][docker-image-size-url]
 ![repo size][repo-size-image]
 ![python version][python-version-image]
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [HomePage-image]: https://img.shields.io/badge/HomePage-qiandao--today-brightgreen
 [HomePage-url]: https://qiandao.a76yyyy.cn
@@ -298,3 +301,25 @@ EXTRA_CHARSETS_NAME|否|""|config目录下自定义ONNX对应自定义charsets.j
 ===========
 
 [MIT](https://fastly.jsdelivr.net/gh/qiandao-today/qiandao@master/LICENSE) 许可协议
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://www.a76yyyy.cn"><img src="https://avatars.githubusercontent.com/u/56478790?v=4?s=100" width="100px;" alt=""/><br /><sub><b>a76yyyyy</b></sub></a><br /><a href="#design-a76yyyy" title="Design">🎨</a> <a href="https://github.com/qiandao-today/qiandao/commits?author=a76yyyy" title="Code">💻</a> <a href="#maintenance-a76yyyy" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="http://binux.me/"><img src="https://avatars.githubusercontent.com/u/646451?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Roy Binux</b></sub></a><br /><a href="#design-Binux" title="Design">🎨</a> <a href="https://github.com/qiandao-today/qiandao/commits?author=Binux" title="Code">💻</a> <a href="#maintenance-Binux" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://github.com/AragonSnow"><img src="https://avatars.githubusercontent.com/u/22835918?v=4?s=100" width="100px;" alt=""/><br /><sub><b>AragonSnow</b></sub></a><br /><a href="https://github.com/qiandao-today/qiandao/commits?author=AragonSnow" title="Code">💻</a> <a href="#design-AragonSnow" title="Design">🎨</a> <a href="#maintenance-AragonSnow" title="Maintenance">🚧</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
