@@ -189,6 +189,7 @@ config.py-配置环境变量
 BIND|否|0.0.0.0|监听地址
 PORT|否|8923|监听端口
 QIANDAO_DEBUG|否|False|是否启用Debug模式
+WORKER_METHOD|否|Queue|任务定时执行方式, <br>默认为 Queue, 可选 Queue 或 Batch, <br>Batch 模式为旧版定时任务执行方式, 性能较弱, <br>**建议仅当 Queue 定时执行模式失效时使用**
 MULTI_PROCESS|否|False|是否启用多进程模式, <br>Windows平台无效
 AUTO_RELOAD|否|False|是否启用自动热加载, <br>MULTI_PROCESS=True时无效
 ENABLE_HTTPS|否|False|发送的邮件链接启用HTTPS, <br>非程序使用HTTPS, 需要HTTPS需要使用反向代理
@@ -204,11 +205,11 @@ QIANDAO_SQL_LOGGING_LEVEL|否|Warning|SQLAlchmey 日志级别, 默认为 'Warnin
 QIANDAO_SQL_ECHO_POOL|否|True|是否启用 SQLAlchmey 的连接池日志输出, 默认为 True, <br>允许设置为 debug 以启用 debug 模式
 QIANDAO_SQL_LOGGING_POOL_NAME|否|qiandao.sql_pool|SQLAlchmey 连接池日志名称, 默认为 'qiandao.sql_pool'
 QIANDAO_SQL_LOGGING_POOL_LEVEL|否|Warning|SQLAlchmey 连接池日志级别, 默认为 'Warning'
-QIANDAO_SQL_POOL_SIZE|否|5|SQLAlchmey 连接池大小, 默认为 5
-QIANDAO_SQL_MAX_OVERFLOW|否|10|SQLAlchmey 连接池最大溢出, 默认为 10
+QIANDAO_SQL_POOL_SIZE|否|10|SQLAlchmey 连接池大小, 默认为 10
+QIANDAO_SQL_MAX_OVERFLOW|否|50|SQLAlchmey 连接池最大溢出, 默认为 50
 QIANDAO_SQL_POOL_PRE_PING|否|True|是否在连接池获取连接前, <br>先ping一下, 默认为 True
 QIANDAO_SQL_POOL_RECYCLE|否|3600|SQLAlchmey 连接池回收时间, 默认为 3600
-QIANDAO_SQL_POOL_TIMEOUT|否|30|SQLAlchmey 连接池超时时间, 默认为 30
+QIANDAO_SQL_POOL_TIMEOUT|否|60|SQLAlchmey 连接池超时时间, 默认为 60
 QIANDAO_SQL_POOL_USE_LIFO|否|True|SQLAlchmey 是否使用 LIFO 算法, 默认为 True
 REDISCLOUD_URL|否|''|需要使用Redis或RedisCloud时, <br>设置为 <http://rediscloud:密码@hostname:port>
 REDIS_DB_INDEX|否|1|默认为1
