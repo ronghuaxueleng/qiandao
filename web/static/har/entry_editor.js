@@ -117,16 +117,16 @@
         }
         url = utils.url_parse($scope.entry.request.url);
         if ((url != null) && url.path.indexOf('%7B%7B') > -1) {
-          url.path = url.path.replace('%7B%7B', '{{');
-          url.path = url.path.replace('%7D%7D', '}}');
-          url.pathname = url.pathname.replace('%7B%7B', '{{');
-          url.pathname = url.pathname.replace('%7D%7D', '}}');
+          url.path = utils.path_unparse_with_variables(url.path);
+          url.pathname = utils.path_unparse_with_variables(url.pathname);
         }
         url.path = url.path.replace('https:///', 'https://');
         query = utils.list2dict($scope.entry.request.queryString);
         query = utils.querystring_unparse_with_variables(query);
         if (query) {
           url.search = `?${query}`;
+        } else {
+          url.search = "";
         }
         url = utils.url_unparse(url);
         if (!changing && url !== $scope.entry.request.url) {
@@ -136,8 +136,11 @@
       }), true);
       // sync params with text
       $scope.$watch('entry.request.postData.params', (function() {
-        var obj, ref, ref1;
+        var obj, ref, ref1, ref2, ref3;
         if (((ref = $scope.entry) != null ? (ref1 = ref.request) != null ? ref1.postData : void 0 : void 0) == null) {
+          return;
+        }
+        if (!(((ref2 = $scope.entry.request.postData) != null ? (ref3 = ref2.mimeType) != null ? ref3.toLowerCase().indexOf("application/x-www-form-urlencoded") : void 0 : void 0) === 0)) {
           return;
         }
         obj = utils.list2dict($scope.entry.request.postData.params);

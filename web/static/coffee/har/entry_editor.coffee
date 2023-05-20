@@ -93,14 +93,15 @@ define (require, exports, module) ->
         return
       url = utils.url_parse($scope.entry.request.url)
       if url? && url.path.indexOf('%7B%7B') > -1
-        url.path = url.path.replace('%7B%7B', '{{')
-        url.path = url.path.replace('%7D%7D', '}}')
-        url.pathname = url.pathname.replace('%7B%7B', '{{')
-        url.pathname = url.pathname.replace('%7D%7D', '}}')
+        url.path = utils.path_unparse_with_variables(url.path)
+        url.pathname = utils.path_unparse_with_variables(url.pathname)
       url.path = url.path.replace('https:///', 'https://')
       query = utils.list2dict($scope.entry.request.queryString)
       query = utils.querystring_unparse_with_variables(query)
-      url.search = "?#{query}" if query
+      if query
+        url.search = "?#{query}"
+      else
+        url.search = ""
       url = utils.url_unparse(url)
 
       if not changing and url != $scope.entry.request.url
@@ -110,7 +111,9 @@ define (require, exports, module) ->
 
     # sync params with text
     $scope.$watch('entry.request.postData.params', (() ->
-      if not $scope.entry?.request?.postData?
+      if not $scope.entry?.request?.postData? 
+        return
+      if not ($scope.entry.request.postData?.mimeType?.toLowerCase().indexOf("application/x-www-form-urlencoded") == 0)
         return
       obj = utils.list2dict($scope.entry.request.postData.params)
       $scope.entry.request.postData.text = utils.querystring_unparse_with_variables(obj)
