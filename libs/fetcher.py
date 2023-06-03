@@ -14,6 +14,7 @@ import urllib
 import urllib.parse as urlparse
 from datetime import datetime
 from io import BytesIO
+from typing import Iterable
 
 from jinja2.sandbox import SandboxedEnvironment as Environment
 from tornado import gen, httpclient, simple_httpclient
@@ -543,7 +544,7 @@ class Fetcher(object):
             'msg': msg,
             }
 
-    FOR_START = re.compile('{%\s*for\s+(\w+)\s+in\s+(\w+)\s*%}')
+    FOR_START = re.compile('{%\s*for\s+(\w+)\s+in\s+(\w+|list\([\s\S]*\)|range\([\s\S]*\))\s*%}')
     IF_START = re.compile('{%\s*if\s+(.+)\s*%}')
     ELSE_START = re.compile('{%\s*else\s*%}')
     PARSE_END = re.compile('{%\s*end(for|if)\s*%}')
@@ -619,9 +620,45 @@ class Fetcher(object):
             if request_limit <= 0:
                 raise Exception('request limit')
             elif block['type'] == 'for':
-                for each in env['variables'].get(block['from'], []):
-                    env['variables'][block['target']] = each
-                    env = await self.do_fetch(block['body'], env, proxies=[proxy], request_limit=request_limit, tpl_length=tpl_length)
+                support_enum = False
+                _from_var = block['from']
+                _from = env['variables'].get(_from_var, [])
+                try:
+                    if isinstance(_from_var, str) and _from_var.startswith('list(') or _from_var.startswith('range('):
+                        _from = safe_eval(_from_var, env['variables'])
+                    if not isinstance(_from, Iterable):
+                        raise Exception('for循环只支持可迭代类型及变量')
+                    support_enum = True
+                except Exception as e:
+                    if config.debug:
+                        logger_Fetcher.exception(e)
+                if support_enum:
+                    env['variables']['loop_length'] = str(len(_from))
+                    env['variables']['loop_depth'] = str(int(env['variables'].get('loop_depth', '0')) + 1)
+                    env['variables']['loop_depth0'] = str(int(env['variables'].get('loop_depth0', '-1')) + 1)
+                    for idx, each in enumerate(_from):
+                        env['variables'][block['target']] = each
+                        if idx == 0:
+                            env['variables']['loop_first'] = 'True'
+                            env['variables']['loop_last'] = 'False'
+                        elif idx == len(_from) - 1:
+                            env['variables']['loop_first'] = 'False'
+                            env['variables']['loop_last'] = 'True'
+                        else:
+                            env['variables']['loop_first'] = 'False'
+                            env['variables']['loop_last'] = 'False'
+                        env['variables']['loop_index'] = str(idx + 1)
+                        env['variables']['loop_index0'] = str(idx)
+                        env['variables']['loop_revindex'] = str(len(_from) - idx)
+                        env['variables']['loop_revindex0'] = str(len(_from) - idx - 1)
+                        env = await self.do_fetch(block['body'], env, proxies=[proxy], request_limit=request_limit, tpl_length=tpl_length)
+                    env['variables']['loop_depth'] = str(int(env['variables'].get('loop_depth', '0')) - 1)
+                    env['variables']['loop_depth0'] = str(int(env['variables'].get('loop_depth0', '-1')) - 1)
+                else:
+                    for each in _from:
+                        env['variables'][block['target']] = each
+                        env = await self.do_fetch(block['body'], env, proxies=[proxy], request_limit=request_limit, tpl_length=tpl_length)
+
             elif block['type'] == 'if':
                 try:
                     condition = safe_eval(block['condition'],env['variables'])
