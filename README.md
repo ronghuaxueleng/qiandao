@@ -39,7 +39,7 @@
 ### 发布模板流程
 
 1. 进入 Issue 界面
-2. 点击右上角 `New issue` 按钮, 选择 `Process HAR` 对应的 `Get Started` 按钮
+2. 点击右上角 `New issue` 按钮, 选择 `HAR 模板发布` 对应的 `Get Started` 按钮
 3. 标题填写 "模板名称 评论区",内容按照要求的格式进行填写
 4. 点击 `Submit new issue` 按钮
 5. 等待 Github Actions 运行完成, 会自动进行 PR
@@ -112,7 +112,7 @@
     }
     ```
 
-2. 加速默认是 `jsdeliver` 加速, 只支持 `Github` 的加速
+2. 加速默认是 `jsdelivr` 加速, 可通过 config 或环境变量配置修改为 `ghproxy` 或 `fastgit` 加速, 只支持 `Github` 仓库的加速
 3. 模板更新规则: 上一次更新的24小时以后更新, 通过 `name` 判断是否存在, 如果不存在直接新增, 如果存在则通过 `version` 判断, 版本号大于当前缓存版本则更新
 
 > 项目不对任何第三方库的内容负责, 请自行判断是否可信
