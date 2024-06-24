@@ -2989,18 +2989,6 @@
             "version": "20240215",
             "commenturl": "https://github.com/qd-today/templates/issues/524"
         },
-        "xbbs.me": {
-            "name": "xbbs.me",
-            "author": "loveqianool",
-            "url": "https://raw.githubusercontent.com/qd-today/templates/master/xbbs.me.har",
-            "update": false,
-            "comments": "用户名密码<br>https://xbbs.me",
-            "filename": "xbbs.me.har",
-            "content": "W3sicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImh0dHBzOi8veGJicy5tZS9hamF4LnBocCIsICJoZWFkZXJzIjogW10sICJjb29raWVzIjogW10sICJkYXRhIjogImFjdGlvbj1sb2dpbiZlbWFpbD17e3VzZXJuYW1lfX0mcGFzc3dvcmQ9e3twYXNzd29yZH19In0sICJydWxlIjogeyJzdWNjZXNzX2Fzc2VydHMiOiBbeyJyZSI6ICJcImNvZGVcIjowIiwgImZyb20iOiAiY29udGVudCJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFtdfX0sIHsiY29tbWVudCI6ICIiLCAicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImh0dHBzOi8veGJicy5tZS9hamF4LnBocCIsICJoZWFkZXJzIjogW10sICJjb29raWVzIjogW10sICJkYXRhIjogImFjdGlvbj1kYWlseUNoZWNrSW4ifSwgInJ1bGUiOiB7InN1Y2Nlc3NfYXNzZXJ0cyI6IFt7InJlIjogIlwiY29kZVwiOjAiLCAiZnJvbSI6ICJjb250ZW50In0sIHsicmUiOiAi5bey57uP562+5Yiw6L+HIiwgImZyb20iOiAiY29udGVudCJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFtdfX0sIHsicmVxdWVzdCI6IHsibWV0aG9kIjogIkdFVCIsICJ1cmwiOiAiaHR0cHM6Ly94YmJzLm1lL215Lmh0bWwiLCAiaGVhZGVycyI6IFtdLCAiY29va2llcyI6IFtdLCAiZGF0YSI6ICIifSwgInJ1bGUiOiB7InN1Y2Nlc3NfYXNzZXJ0cyI6IFt7InJlIjogIjIwMCIsICJmcm9tIjogInN0YXR1cyJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFt7Im5hbWUiOiAiX19sb2dfXyIsICJyZSI6ICIo5b2T5YmN56ev5YiGW1xcc1xcU10rP+WIhikiLCAiZnJvbSI6ICJjb250ZW50In1dfX1d",
-            "date": "2024-02-15 14:59:40",
-            "version": "20240215",
-            "commenturl": "https://github.com/qd-today/templates/issues/526"
-        },
         "维咔ACG": {
             "name": "维咔ACG",
             "author": "loveqianool",
@@ -3032,9 +3020,9 @@
             "update": true,
             "comments": "选填",
             "filename": "sex8.cc.har",
-            "content": "W3sicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImh0dHBzOi8vc2V4OC5jYy9wbHVnaW4ucGhwP2lkPXNpZ25pbiUzQXNpZ25pbl9yZWciLCAiaGVhZGVycyI6IFt7Im5hbWUiOiAiY29va2llIiwgInZhbHVlIjogInt7IGNvb2tpZSB9fSJ9XSwgImNvb2tpZXMiOiBbXSwgImRhdGEiOiAiJmFjPXJlZ3NpZ24ifSwgInJ1bGUiOiB7InN1Y2Nlc3NfYXNzZXJ0cyI6IFt7InJlIjogIjIwMCIsICJmcm9tIjogInN0YXR1cyJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFtdfX0sIHsiY29tbWVudCI6ICIiLCAicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImh0dHBzOi8vc2V4OC5jYy9wbHVnaW4ucGhwP2lkPXNpZ25pbiUzQXNpZ25pbl9yZWciLCAiaGVhZGVycyI6IFtdLCAiY29va2llcyI6IFtdLCAiZGF0YSI6ICImYWM9cmVnc2lnbiJ9LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiXFxcXHU1ZGYyXFxcXHU3YjdlIiwgImZyb20iOiAiY29udGVudCJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFt7Im5hbWUiOiAicyIsICJyZSI6ICIoXFxcXC4rPylcIiIsICJmcm9tIjogImNvbnRlbnQifV19fSwgeyJyZXF1ZXN0IjogeyJtZXRob2QiOiAiR0VUIiwgInVybCI6ICJodHRwczovL3NleDguY2MvaG9tZS5waHA/bW9kPXNwYWNlJmRvPW5vdGljZSZ2aWV3PXN5c3RlbSIsICJoZWFkZXJzIjogW10sICJjb29raWVzIjogW119LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiMjAwIiwgImZyb20iOiAic3RhdHVzIn1dLCAiZmFpbGVkX2Fzc2VydHMiOiBbXSwgImV4dHJhY3RfdmFyaWFibGVzIjogW119fSwgeyJyZXF1ZXN0IjogeyJtZXRob2QiOiAiR0VUIiwgInVybCI6ICJodHRwOi8vc2V4OC5jYy9ob21lLnBocD9tb2Q9c3BhY2VjcCZhYz1jcmVkaXQmc2hvd2NyZWRpdD0xIiwgImhlYWRlcnMiOiBbXSwgImNvb2tpZXMiOiBbXSwgImRhdGEiOiAiIn0sICJydWxlIjogeyJzdWNjZXNzX2Fzc2VydHMiOiBbeyJyZSI6ICIyMDAiLCAiZnJvbSI6ICJzdGF0dXMifV0sICJmYWlsZWRfYXNzZXJ0cyI6IFtdLCAiZXh0cmFjdF92YXJpYWJsZXMiOiBbeyJuYW1lIjogIm5pY2tuYW1lIiwgInJlIjogIuiuv+mXruaIkeeahOepuumXtFwiPiguKz8pPCIsICJmcm9tIjogImNvbnRlbnQifSwgeyJuYW1lIjogImpmIiwgInJlIjogIijpk7bluIE6W1xcc1xcU10qKVxcKCA8dT7mgLsiLCAiZnJvbSI6ICJjb250ZW50In0sIHsibmFtZSI6ICJnIiwgInJlIjogIijnlKjmiLfnu4QuKyk8IiwgImZyb20iOiAiY29udGVudCJ9XX19LCB7ImNvbW1lbnQiOiAiVW5pY29kZei9rOaNoiIsICJyZXF1ZXN0IjogeyJtZXRob2QiOiAiUE9TVCIsICJ1cmwiOiAiYXBpOi8vdXRpbC91bmljb2RlIiwgImhlYWRlcnMiOiBbXSwgImNvb2tpZXMiOiBbXSwgImRhdGEiOiAiY29udGVudD3nlKjmiLflkI06IHt7bmlja25hbWV9fSB7e2d9fSB7e3VuaWNvZGUocyl9fSB7eyBqZiB8IHN0cmlwdGFncyB9fSJ9LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiMjAwIiwgImZyb20iOiAic3RhdHVzIn0sIHsicmUiOiAiXCLnirbmgIFcIjogXCIyMDBcIiIsICJmcm9tIjogImNvbnRlbnQifV0sICJmYWlsZWRfYXNzZXJ0cyI6IFtdLCAiZXh0cmFjdF92YXJpYWJsZXMiOiBbeyJuYW1lIjogIl9fbG9nX18iLCAicmUiOiAiXCLovazmjaLlkI5cIjogXCIoLiopXCIiLCAiZnJvbSI6ICJjb250ZW50In1dfX1d",
-            "date": "2024-02-15 15:07:47",
-            "version": "20240215",
+            "content": "W3sicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImh0dHBzOi8vc2V4OC5jYy9wbHVnaW4ucGhwP2lkPXNpZ25pbiUzQXNpZ25pbl9yZWciLCAiaGVhZGVycyI6IFt7Im5hbWUiOiAiY29va2llIiwgInZhbHVlIjogInt7IGNvb2tpZSB9fSJ9XSwgImNvb2tpZXMiOiBbXSwgImRhdGEiOiAiJmFjPXJlZ3NpZ24ifSwgInJ1bGUiOiB7InN1Y2Nlc3NfYXNzZXJ0cyI6IFt7InJlIjogIjIwMCIsICJmcm9tIjogInN0YXR1cyJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFtdfX0sIHsiY29tbWVudCI6ICIiLCAicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImh0dHBzOi8vc2V4OC5jYy9wbHVnaW4ucGhwP2lkPXNpZ25pbiUzQXNpZ25pbl9yZWciLCAiaGVhZGVycyI6IFtdLCAiY29va2llcyI6IFtdLCAiZGF0YSI6ICImYWM9cmVnc2lnbiJ9LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiXFxcXHU1ZGYyXFxcXHU3YjdlIiwgImZyb20iOiAiY29udGVudCJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFt7Im5hbWUiOiAicyIsICJyZSI6ICIoXFxcXC4rPylcIiIsICJmcm9tIjogImNvbnRlbnQifV19fSwgeyJyZXF1ZXN0IjogeyJtZXRob2QiOiAiR0VUIiwgInVybCI6ICJodHRwczovL3NleDguY2MvaG9tZS5waHA/bW9kPXNwYWNlJmRvPW5vdGljZSZ2aWV3PXN5c3RlbSIsICJoZWFkZXJzIjogW10sICJjb29raWVzIjogW119LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiMjAwIiwgImZyb20iOiAic3RhdHVzIn1dLCAiZmFpbGVkX2Fzc2VydHMiOiBbXSwgImV4dHJhY3RfdmFyaWFibGVzIjogW119fSwgeyJyZXF1ZXN0IjogeyJtZXRob2QiOiAiR0VUIiwgInVybCI6ICJodHRwczovL3NleDguY2MvaG9tZS5waHA/bW9kPXNwYWNlY3AmYWM9Y3JlZGl0JnNob3djcmVkaXQ9MSIsICJoZWFkZXJzIjogW10sICJjb29raWVzIjogW10sICJkYXRhIjogIiJ9LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiMjAwIiwgImZyb20iOiAic3RhdHVzIn1dLCAiZmFpbGVkX2Fzc2VydHMiOiBbXSwgImV4dHJhY3RfdmFyaWFibGVzIjogW3sibmFtZSI6ICJuaWNrbmFtZSIsICJyZSI6ICLorr/pl67miJHnmoTnqbrpl7RcIj4oLis/KTwiLCAiZnJvbSI6ICJjb250ZW50In0sIHsibmFtZSI6ICJqZiIsICJyZSI6ICIo6ZO25biBOltcXHNcXFNdKilcXCggPHU+5oC7IiwgImZyb20iOiAiY29udGVudCJ9LCB7Im5hbWUiOiAiZyIsICJyZSI6ICIo55So5oi357uELispPCIsICJmcm9tIjogImNvbnRlbnQifV19fSwgeyJjb21tZW50IjogIlVuaWNvZGXovazmjaIiLCAicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImFwaTovL3V0aWwvdW5pY29kZSIsICJoZWFkZXJzIjogW10sICJjb29raWVzIjogW10sICJkYXRhIjogImNvbnRlbnQ955So5oi35ZCNOiB7e25pY2tuYW1lfX0ge3tnfX0ge3t1bmljb2RlKHMpfX0ge3sgamYgfCBzdHJpcHRhZ3MgfX0ifSwgInJ1bGUiOiB7InN1Y2Nlc3NfYXNzZXJ0cyI6IFt7InJlIjogIjIwMCIsICJmcm9tIjogInN0YXR1cyJ9LCB7InJlIjogIlwi54q25oCBXCI6IFwiMjAwXCIiLCAiZnJvbSI6ICJjb250ZW50In1dLCAiZmFpbGVkX2Fzc2VydHMiOiBbXSwgImV4dHJhY3RfdmFyaWFibGVzIjogW3sibmFtZSI6ICJfX2xvZ19fIiwgInJlIjogIlwi6L2s5o2i5ZCOXCI6IFwiKC4qKVwiIiwgImZyb20iOiAiY29udGVudCJ9XX19XQ==",
+            "date": "2024-06-24 19:36:23",
+            "version": "20240624",
             "commenturl": "https://github.com/qd-today/templates/issues/518"
         },
         "绅士仓库": {
@@ -3204,18 +3192,6 @@
             "date": "2024-02-27 07:58:23",
             "version": "20240227",
             "commenturl": "https://github.com/qd-today/templates/issues/565"
-        },
-        "超能胖次": {
-            "name": "超能胖次",
-            "author": "NSFW",
-            "url": "https://raw.githubusercontent.com/qd-today/templates/master/超能胖次.har",
-            "update": false,
-            "comments": "http://wacos.top<br>账户密码",
-            "filename": "超能胖次.har",
-            "content": "W3sicmVxdWVzdCI6IHsibWV0aG9kIjogIlBPU1QiLCAidXJsIjogImh0dHA6Ly93YWNvcy50b3AvbWVtYmVyLnBocD9tb2Q9bG9nZ2luZyZhY3Rpb249bG9naW4mbG9naW5zdWJtaXQ9eWVzJmluYWpheD0xIiwgImhlYWRlcnMiOiBbXSwgImNvb2tpZXMiOiBbXSwgImRhdGEiOiAidXNlcm5hbWU9e3t1c2VybmFtZX19JnBhc3N3b3JkPXt7cGFzc3dvcmR9fSJ9LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAi5qyi6L+OIiwgImZyb20iOiAiY29udGVudCJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFtdfX0sIHsicmVxdWVzdCI6IHsibWV0aG9kIjogIkdFVCIsICJ1cmwiOiAiaHR0cDovL3dhY29zLnRvcC9wbHVnaW4ucGhwP2lkPWRzdV9wYXVsc2lnbiUzQXNpZ24iLCAiaGVhZGVycyI6IFtdLCAiY29va2llcyI6IFtdLCAiZGF0YSI6ICIifSwgInJ1bGUiOiB7InN1Y2Nlc3NfYXNzZXJ0cyI6IFt7InJlIjogIjIwMCIsICJmcm9tIjogInN0YXR1cyJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFt7Im5hbWUiOiAiZm9ybWhhc2giLCAicmUiOiAiZm9ybWhhc2hcIiB2YWx1ZT1cIihcXHcrKSIsICJmcm9tIjogImNvbnRlbnQifV19fSwgeyJyZXF1ZXN0IjogeyJtZXRob2QiOiAiUE9TVCIsICJ1cmwiOiAiaHR0cDovL3dhY29zLnRvcC9wbHVnaW4ucGhwP2lkPWRzdV9wYXVsc2lnbiUzQXNpZ24mb3BlcmF0aW9uPXFpYW5kYW8maW5hamF4PTEiLCAiaGVhZGVycyI6IFtdLCAiY29va2llcyI6IFtdLCAiZGF0YSI6ICJmb3JtaGFzaD17e2Zvcm1oYXNofX0mcWR4cT1reCJ9LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiMjAwIiwgImZyb20iOiAic3RhdHVzIn1dLCAiZmFpbGVkX2Fzc2VydHMiOiBbXSwgImV4dHJhY3RfdmFyaWFibGVzIjogW119fSwgeyJyZXF1ZXN0IjogeyJtZXRob2QiOiAiR0VUIiwgInVybCI6ICJodHRwOi8vd2Fjb3MudG9wL3BsdWdpbi5waHA/aWQ9ZHN1X3BhdWxzaWduJTNBc2lnbiIsICJoZWFkZXJzIjogW10sICJjb29raWVzIjogW10sICJkYXRhIjogIiJ9LCAicnVsZSI6IHsic3VjY2Vzc19hc3NlcnRzIjogW3sicmUiOiAiMjAwIiwgImZyb20iOiAic3RhdHVzIn1dLCAiZmFpbGVkX2Fzc2VydHMiOiBbXSwgImV4dHJhY3RfdmFyaWFibGVzIjogW3sibmFtZSI6ICJfX2xvZ19fIiwgInJlIjogIuacquW8gOWniyhbXFxzXFxTXSop562+5Yiw5o6S6KGM5qacIiwgImZyb20iOiAiY29udGVudCJ9XX19LCB7ImNvbW1lbnQiOiAiVW5pY29kZei9rOaNoiIsICJyZXF1ZXN0IjogeyJtZXRob2QiOiAiUE9TVCIsICJ1cmwiOiAiYXBpOi8vdXRpbC91bmljb2RlIiwgImhlYWRlcnMiOiBbXSwgImNvb2tpZXMiOiBbXSwgImRhdGEiOiAiY29udGVudD17eyBfX2xvZ19fIHwgc3RyaXB0YWdzIH19In0sICJydWxlIjogeyJzdWNjZXNzX2Fzc2VydHMiOiBbeyJyZSI6ICIyMDAiLCAiZnJvbSI6ICJzdGF0dXMifSwgeyJyZSI6ICJcIueKtuaAgVwiOiBcIjIwMFwiIiwgImZyb20iOiAiY29udGVudCJ9XSwgImZhaWxlZF9hc3NlcnRzIjogW10sICJleHRyYWN0X3ZhcmlhYmxlcyI6IFt7Im5hbWUiOiAiX19sb2dfXyIsICJyZSI6ICJcIui9rOaNouWQjlwiOiBcIiguKilcIiIsICJmcm9tIjogImNvbnRlbnQifV19fV0=",
-            "date": "2024-02-27 08:04:03",
-            "version": "20240227",
-            "commenturl": "https://github.com/qd-today/templates/issues/567"
         },
         "老司機論壇": {
             "name": "老司機論壇",
