@@ -19,7 +19,7 @@ Docker 容器部署是部署 QD 的最简单方式。
 > - `20xxxxxx`: 指定 Release 版本, 版本号表示为 Release 发布日期。同样有四种口味, 分别是 `ja3-20xxxxxx`、`lite-20xxxxxx`、`ja3-lite-20xxxxxx`
 > - `dev`: 最新开发版, 同步最新源码, 不保证稳定性。同样有四种口味, 分别是 `lite-dev`、`ja3-dev`、`ja3-lite-dev`
 >
-> 架构说明: `latest` 与 `ja3-latest` 不提供 `386`、`arm/v6`、`s390x` 三个架构, 因为 OCR 相关依赖在这三个架构上没有可用的 musllinux 轮子。这三个架构请使用 `lite` 系列, 其余架构上两者内容完全一致。
+> 架构说明: OCR 相关依赖在 `386`、`arm/v6`、`s390x` 上没有可用的 musllinux 轮子。这三个架构上 `latest` 仍可拉取, 但该平台的内容等同于 `lite-latest` (不含验证码识别); `ja3-latest` 在 `386`、`arm/v6` 上等同于 `ja3-lite-latest`, 在 `s390x` 上不提供。需要验证码识别请使用 `amd64`、`arm64`、`arm/v7`、`ppc64le`、`riscv64`、`loong64`。
 
 ### 部署方法
 
@@ -192,3 +192,15 @@ WS_MAX_CONNECTIONS_SUBSCRIBE|No|30|WebSocket 公共模板更新页面最大连�
 SUBSCRIBE_ACCELERATE_URL|No|jsdelivr_cdn|订阅加速方式或地址, 用于加速公共模板更新, 仅适用于 GitHub. <br>[详见配置](https://github.com/qd-today/qd/blob/master/config.py)...
 
 > 详细信息请查阅[config.py](https://github.com/qd-today/qd/blob/master/config.py)
+
+#### 4. 裸 Alpine（源码部署）
+
+容器镜像自带 Python 依赖，只有直接在 Alpine 上跑源码时才需要这一步。
+
+``` sh
+sh update.sh
+```
+
+在容器外运行时会一并安装 Python 依赖：从三个组件仓库的 GitHub Release 下载预编译的
+musllinux 轮子，用 uv 安装。不能靠 PyPI——onnxruntime 与 OpenCV 没有 musllinux
+轮子，pycurl 只有源码包。`QD_NO_OCR=1 sh update.sh` 可跳过两个 OCR wheelhouse。

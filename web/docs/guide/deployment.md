@@ -19,7 +19,7 @@ Docker Container Deployment is the easiest way to deploy QD.
 > - `20xxxxxx`: Specify Release version, version number is represented by Release release date. The same four flavours exist with a prefix: `ja3-20xxxxxx`, `lite-20xxxxxx`, `ja3-lite-20xxxxxx`
 > - `dev`: Latest development version, synchronized with the latest source code, no stability guarantee. The same four flavours exist with a prefix: `lite-dev`, `ja3-dev`, `ja3-lite-dev`
 >
-> Architecture note: `latest` and `ja3-latest` are not published for `386`, `arm/v6` and `s390x`, because the OCR dependencies have no musllinux wheels for those architectures. Use the `lite` flavour on those platforms — it is the same image on every other architecture.
+> Architecture note: the OCR dependencies have no musllinux wheels for `386`, `arm/v6` and `s390x`. On those three architectures `latest` is still pullable, but the platform entry is the `lite` flavour (no captcha recognition); `ja3-latest` is the `ja3-lite` flavour on `386` and `arm/v6`, and is not published for `s390x`. Use `amd64`, `arm64`, `arm/v7`, `ppc64le`, `riscv64` or `loong64` if you need captcha recognition.
 
 ### Deploy Method
 
@@ -192,3 +192,18 @@ python ./chrole.py your@email.address admin
 |SUBSCRIBE_ACCELERATE_URL|No|qd-ph|Subscribe page acceleration URL, the default is qd-ph, <br>[See configuration for details](https://github.com/qd-today/qd/blob/master/config.py)...|
 
 > For details, please refer to [config.py](https://github.com/qd-today/qd/blob/master/config.py)
+
+#### 4. Bare Alpine (source deployment)
+
+Container images ship their Python dependencies, so this step is only needed when you
+run the source directly on Alpine.
+
+``` sh
+sh update.sh
+```
+
+Outside a container it also installs the Python dependencies: it downloads prebuilt
+musllinux wheels from the three component repositories' GitHub Releases and installs
+them with uv. PyPI is not enough here — onnxruntime and OpenCV have no musllinux
+wheels, and pycurl is source-only. Use `QD_NO_OCR=1 sh update.sh` to skip the two OCR
+wheelhouses.

@@ -66,6 +66,22 @@ QD —— 一个<b>HTTP请求定时任务自动执行框架</b> base on HAR Edit
 
 请参阅 **[使用指南](https://qd-today.github.io/qd/zh_CN/)**
 
+镜像
+==========
+
+| 标签 | 说明 |
+|---|---|
+| `latest` | 完整功能，含验证码识别 |
+| `lite-latest` | 精简版，不含验证码识别 |
+| `ja3-latest` | 含验证码识别，pycurl 带 TLS 指纹伪装 |
+| `ja3-lite-latest` | 精简 + TLS 指纹伪装 |
+
+`386` / `arm/v6` / `s390x` 上没有可用的 OCR 依赖轮子：这三个架构上 `latest` 仍可拉取，
+但对应平台的内容等同于 `lite-latest`（不含验证码识别）；`ja3-latest` 在 `386` / `arm/v6`
+上等同于 `ja3-lite-latest`，在 `s390x` 上不提供。需要验证码识别请使用 `amd64` / `arm64` /
+`arm/v7` / `ppc64le` / `riscv64` / `loong64`。部署方式与配置见
+[使用指南](https://qd-today.github.io/qd/zh_CN/)。
+
 更新日志
 ===========
 
