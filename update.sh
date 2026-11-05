@@ -157,22 +157,9 @@ read_release_args() {
 }
 
 install_deps_uv() {
-    # 四种形态：
-    #   新镜像（容器 + .venv）  -> 镜像自带，热更新只换代码
-    #   旧镜像（容器，无 .venv）-> 依赖在系统 python，与新代码不兼容，只能换镜像
-    #   Alpine 裸机（musl）     -> apk uv + 本地 wheelhouse（musllinux）
-    #   glibc 裸机（Ubuntu 等） -> 官方 uv + uv sync（许多 manylinux 轮子）
-    if [ -f /.dockerenv ]; then
-        if [ -x .venv/bin/python ]; then
-            echo "Info: 依赖由镜像提供（/usr/src/app/.venv），热更新不重装依赖"
-            echo "Info: 如需更新依赖版本，请拉取对应 tag 的新镜像"
-            return 0
-        fi
-        echo "Error: 当前镜像没有 .venv，与新代码不兼容。" >&2
-        echo "       这是依赖形态变更的边界，热更新无法跨越，请拉取对应 tag 的新镜像。" >&2
-        return 1
-    fi
-
+    # 容器与裸机动作一致：按 libc 选依赖来源，不看是否在容器里。
+    #   musl（Alpine 容器 / Alpine 裸机 / 旧镜像）-> apk uv + 本地 wheelhouse
+    #   glibc（Ubuntu / Debian 裸机）              -> 官方 uv + uv sync
     if is_musl; then
         install_deps_alpine
     else
@@ -180,8 +167,29 @@ install_deps_uv() {
     fi
 }
 
+# 依赖指纹：三个仓的 ARG + uv.lock 的哈希。只有它的值变了才值得重新下载 wheel
+# （三个包合计约 250MB）并重装依赖。
+deps_stamp() {
+    _lock_hash=""
+    [ -f uv.lock ] && _lock_hash=$(sha256sum uv.lock 2>/dev/null | cut -d' ' -f1)
+    echo "${_pycurl_prefix}${_pycurl}|${_ddddocr}|${_onnx}|${_lock_hash:-no-lock}"
+}
+
 install_deps_alpine() {
     echo "Info: 检测到 musl（Alpine），使用本地 wheelhouse 安装依赖"
+    read_release_args || return 1
+
+    # 已装版本与目标一致、且 .venv 可用时直接跳过：热更新多数时候只改代码，
+    # 重下 250MB wheel 没有收益。
+    _stamp_file=".venv/.qd-deps-stamp"
+    _want=$(deps_stamp)
+    # 用 pyvenv.cfg 判断 .venv 是否可用：-x .venv/bin/python 检查的是符号链接的目标，
+    # 目标不在（如容器里没有 /usr/local/bin/python）时会误判成 venv 不可用。
+    if [ -f .venv/pyvenv.cfg ] && [ -f "$_stamp_file" ] && [ "$(cat "$_stamp_file" 2>/dev/null)" = "$_want" ]; then
+        echo "Info: 依赖版本未变（${_want%%|*} / $_ddddocr / $_onnx），跳过下载与安装"
+        return 0
+    fi
+
     set_alpine_mirrors "${alpine_mirrors}"
 
     # 少数纯 Python 包（greenlet / pycryptodome 这类）在部分架构上没有 musllinux
@@ -193,17 +201,48 @@ install_deps_alpine() {
         ln -sf /usr/bin/python3 /usr/local/bin/python
     fi
 
-    apk add --no-cache uv || { echo "Error: 安装 uv 失败" >&2; return 1; }
+    # uv 从 alpine 3.21 起才进 community 仓库。旧镜像（3.19 那批）走两段兜底：
+    #   1. astral.sh 的官方脚本——旧镜像访问不到那个域名（wget exit 4），只能当备选
+    #   2. apk add py3-pip + pip install uv——uv 在 PyPI 有 musllinux wheel，最稳
+    if ! apk add --no-cache uv 2>/dev/null; then
+        echo "Info: apk 没有 uv（老版本 alpine），尝试从 PyPI 安装"
+        if ! python3 -m pip --version >/dev/null 2>&1; then
+            apk add --no-cache py3-pip >/dev/null 2>&1 \
+                || { echo "Error: 装不上 py3-pip" >&2; return 1; }
+        fi
+        # alpine 的 py3-pip 标了 externally-managed（PEP 668），不加这个参数会被拒
+        python3 -m pip install --no-cache-dir --break-system-packages uv \
+            --index-url "${PIP_MIRROR:-https://pypi.org/simple}" \
+            || { echo "Error: pip install uv 失败" >&2; return 1; }
+        command -v uv >/dev/null 2>&1 || { echo "Error: uv 不在 PATH 里" >&2; return 1; }
+        echo "Info: uv 已通过 pip 安装（$(uv --version 2>&1 | head -1)）"
+    fi
 
     # 用 uv 的默认位置创建虚拟环境，与镜像里的路径一致（/usr/src/app/.venv）
-    uv venv .venv --python python3 || { echo "Error: 创建 .venv 失败" >&2; return 1; }
+    # 用 pyproject 的 requires-python 决定解释器版本，让 uv 自己取（本地没有就下载）。
+    # 写死 python3 会绑到系统那个——旧镜像里是 3.11，和 cp314 的 wheel 对不上。
+    _pyver=$(sed -n 's/^requires-python = ">=\([0-9.]*\)".*/\1/p' pyproject.toml 2>/dev/null | head -1)
+    _pyver=${_pyver:-3.14}
+    # 系统解释器版本不够（旧镜像里是 3.11）时显式装一个：uv 自己下的解释器
+    # 放在 ~/.local/share/uv/python，容器可写层里能留住；重建容器会重装。
+    if ! uv python find "${_pyver}" >/dev/null 2>&1; then
+        echo "Info: 系统没有 Python ${_pyver}，用 uv 安装"
+        uv python install "${_pyver}" \
+            || { echo "Error: 安装 Python ${_pyver} 失败" >&2; return 1; }
+    fi
+    echo "Info: 创建/更新 .venv（python ${_pyver}）"
+    uv venv .venv --python "${_pyver}" --allow-existing \
+        || { echo "Error: 创建或更新 .venv 失败" >&2; return 1; }
 
-    # requirements.txt 由 lock 导出，不提交到仓库，避免「lock 改了文件没跟上」
+    # requirements.txt 由 lock 导出，不提交到仓库，避免「lock 改了文件没跟上」。
+    # OCR 栈在 pyproject 的 optional-dependencies.ocr 里，不带 --extra 就导不出来。
     _req=/tmp/qd-requirements.txt
-    uv export --frozen --no-hashes --no-emit-project -o "$_req" \
+    _extra=""
+    [ -n "$_ddddocr" ] && [ -n "$_onnx" ] && _extra="--extra ocr"
+    # shellcheck disable=SC2086
+    uv export --frozen --no-hashes --no-emit-project $_extra -o "$_req" \
         || { echo "Error: uv export 失败" >&2; return 1; }
 
-    read_release_args || return 1
 
     _arch=$(uname -m)
     case "$_arch" in
@@ -216,10 +255,13 @@ install_deps_alpine() {
 
     _tmp=$(mktemp -d) || return 1
     _fetch() {
+        # 每个仓解压到自己的子目录：三个 tar 里的顶层目录都叫 wheels-<arch>，
+        # 解压到同一处会互相覆盖，最后只剩一个仓的索引。
         _url="https://github.com/qd-today/$1/releases/download/$2/$3-wheels-$_arch.tar.gz"
         echo "Info: 下载 $_url"
-        wget -q "$_url" -O "$_tmp/$1.tar.gz" || { echo "Error: 下载 $1 失败" >&2; return 1; }
-        tar xzf "$_tmp/$1.tar.gz" -C "$_tmp" || { echo "Error: 解压 $1 失败" >&2; return 1; }
+        mkdir -p "$_tmp/$1"
+        wget -q "$_url" -O "$_tmp/$1/pkg.tar.gz" || { echo "Error: 下载 $1 失败" >&2; return 1; }
+        tar xzf "$_tmp/$1/pkg.tar.gz" -C "$_tmp/$1" || { echo "Error: 解压 $1 失败" >&2; return 1; }
     }
 
     # 这套 wheel 与镜像同批，全部自包含 C 依赖
@@ -231,7 +273,7 @@ install_deps_alpine() {
     fi
 
     # 先装系统包：清单随 wheelhouse 发布，上层照单安装
-    _pkgs=$(cat "$_tmp"/wheels-*/system-packages.txt 2>/dev/null | sort -u | tr '\n' ' ')
+    _pkgs=$(cat "$_tmp"/*/wheels-*/system-packages.txt 2>/dev/null | sort -u | tr '\n' ' ')
     if [ -n "$_pkgs" ]; then
         echo "Info: 安装系统包 $_pkgs"
         apk add --no-cache $_pkgs || { echo "Error: 安装系统包失败" >&2; rm -rf "$_tmp"; return 1; }
@@ -239,7 +281,7 @@ install_deps_alpine() {
 
     # 每个 wheelhouse 一个索引，按定义顺序查询；PyPI 只兜底纯 Python 包
     _indexes=""
-    for _d in "$_tmp"/wheels-*/simple; do
+    for _d in "$_tmp"/*/wheels-*/simple; do
         [ -d "$_d" ] && _indexes="$_indexes --extra-index-url file://$_d"
     done
 
@@ -251,6 +293,8 @@ install_deps_alpine() {
     rm -rf "$_tmp" "$_req"
     apk del .build_deps >/dev/null 2>&1
     rm -rf /var/cache/apk/* /usr/share/man/*
+    # 记下这次装的版本，下次热更新据此判断是否要重装
+    [ "$_rc" -eq 0 ] && deps_stamp > "$_stamp_file" 2>/dev/null
     if [ "$_rc" -ne 0 ]; then
         echo "Error: 依赖安装失败" >&2
         return $_rc
@@ -329,24 +373,41 @@ update_tarball() {
     # config/ 是 VOLUME 挂载点：既不能删（Resource busy）也不该被归档覆盖，
     # 归档里的 config 只有 .gitkeep，直接丢弃，用户的配置原样保留
     rm -rf "${src}/config"
-    cp -a "${src}/." /usr/src/app/
-    chmod +x /usr/src/app/update.sh 2>/dev/null || true
+    # 用脚本所在目录而不是写死 /usr/src/app：裸机部署时目录不是这个
+    cp -a "${src}/." "${_dir}/"
+    chmod +x "${_dir}/update.sh" 2>/dev/null || true
     rm -rf "${tmp}"
 }
 
+# remoteversion 可以是分支名、tag 或 commit。commit 用「hex 且能解析成 commit」判定，
+# 不能只看长度——tag 也可能长得像 hex。
+is_commit() {
+    case "$1" in
+        *[!0-9a-f]*|"") return 1 ;;
+    esac
+    [ ${#1} -ge 7 ] && [ ${#1} -le 40 ] || return 1
+    # qd 的 tag 是纯数字（如 20250803），也符合 hex 的形式。先排除已知 tag，
+    # 否则指定 tag 会被当成 commit 处理，跳过版本比较与降级确认。
+    # 不调 git cat-file——镜像里没有 .git，这里必须能离线判断。
+    ! list_remote_tags 2>/dev/null | grep -qx "$1"
+}
+
 update_git() {
-    # 没有 .git 就无法确定版本、无法和 Dockerfile 的 ARG 对齐，
-    # 依赖会装成另一套。这种情况直接报错，让用户克隆仓库或换镜像。
+    # 没有 .git 时（镜像就是这种）走归档包：tarball 的 URL 接受任意 ref
+    # （tag / commit / branch），与 git 的切换语义等价，只是没有本地历史。
     if ! have_git; then
-        echo "Error: 当前目录没有 git 仓库，无法更新代码。" >&2
-        echo "       请用 git clone 获取源码后再执行本脚本，或直接拉取新镜像。" >&2
-        return 1
+        update_tarball
+        return
     fi
     if [ "${remoteversion}" = ${source_branch} ];then
         git fetch --all && \
         git reset --hard origin/"${remoteversion}" && \
         git checkout -f "${remoteversion}" && \
         git pull
+    elif is_commit "${remoteversion}"; then
+        # 指定 commit：fetch 后 detached checkout（不建分支，避免和 tag 名冲突）
+        git fetch --all && \
+        git checkout -f "${remoteversion}"
     else
         git fetch origin "${remoteversion}" && \
         git reset --hard origin/"${source_branch}" && \
@@ -369,10 +430,22 @@ update() {
             echo -e "Info: 更新完成! \nInfo: 当前版本: ${remoteversion}" && \
             echo_auto_reload
         else
-            if list_remote_tags | grep -q -w "$1"
+            if list_remote_tags | grep -q -w "$1" || is_commit "$1"
             then
                 remoteversion="$1"
-                if [ "$(echo "$localversion" "$remoteversion" | awk '$1>$2 {print 0} $1=<$2 {print 1}')" == 0 ];then
+                if list_remote_tags | grep -qx "$remoteversion"; then
+                    : # tag 路径，走下面的版本比较
+                elif is_commit "$remoteversion"; then
+                    # 指定 commit：不参与版本比较。commit 没有版本号语义，可能比当前
+                    # 新也可能旧，硬套 awk 的数字比较会把它误判成「降级」并要求交互确认。
+                    echo -e "Info: 切换到 commit ${remoteversion}, 请稍候..."
+                    update_git && \
+                    cleanup_legacy_files && \
+                    install_deps_uv && \
+                    get_localversion && \
+                    echo -e "Info: 更新完成! \nInfo: 当前 commit: ${remoteversion}" && \
+                    echo_auto_reload
+                elif [ "$(echo "$localversion" "$remoteversion" | awk '$1>$2 {print 0} $1=<$2 {print 1}')" == 0 ];then
                     # 要求用户手动确认更新至旧版本 (因为旧版本可能存在不兼容的情况)
                     echo -e "Warning: 当前版本: ${localversion} , 旧版本: ${remoteversion}"
                     echo -e "Warning: 旧版本可能导致容器崩溃, 建议直接拉取旧版本容器!"
