@@ -167,26 +167,28 @@ install_deps_uv() {
     fi
 }
 
-# 依赖指纹：三个仓的 ARG + uv.lock 的哈希。只有它的值变了才值得重新下载 wheel
-# （三个包合计约 250MB）并重装依赖。
+# 读当前 Dockerfile 的三仓 ARG，拼成一个可比较的串。
+# 依赖装不装由「更新前读一次、更新后再读一次」决定，不落任何状态文件。
 deps_stamp() {
-    _lock_hash=""
-    [ -f uv.lock ] && _lock_hash=$(sha256sum uv.lock 2>/dev/null | cut -d' ' -f1)
-    echo "${_pycurl_prefix}${_pycurl}|${_ddddocr}|${_onnx}|${_lock_hash:-no-lock}"
+    _pycurl=$(sed -n 's/^ARG PYCURL_RELEASE=//p' Dockerfile 2>/dev/null | tail -1)
+    _pycurl_prefix=$(sed -n 's/^ARG PYCURL_TAG_PREFIX=//p' Dockerfile 2>/dev/null | tail -1)
+    _ddddocr=$(sed -n 's/^ARG DDDDOCR_RELEASE=//p' Dockerfile 2>/dev/null | tail -1)
+    _onnx=$(sed -n 's/^ARG ONNXRUNTIME_RELEASE=//p' Dockerfile 2>/dev/null | tail -1)
+    echo "${_pycurl_prefix}${_pycurl}|${_ddddocr}|${_onnx}"
 }
 
 install_deps_alpine() {
     echo "Info: 检测到 musl（Alpine），使用本地 wheelhouse 安装依赖"
     read_release_args || return 1
 
-    # 已装版本与目标一致、且 .venv 可用时直接跳过：热更新多数时候只改代码，
-    # 重下 250MB wheel 没有收益。
-    _stamp_file=".venv/.qd-deps-stamp"
-    _want=$(deps_stamp)
-    # 用 pyvenv.cfg 判断 .venv 是否可用：-x .venv/bin/python 检查的是符号链接的目标，
-    # 目标不在（如容器里没有 /usr/local/bin/python）时会误判成 venv 不可用。
-    if [ -f .venv/pyvenv.cfg ] && [ -f "$_stamp_file" ] && [ "$(cat "$_stamp_file" 2>/dev/null)" = "$_want" ]; then
-        echo "Info: 依赖版本未变（${_want%%|*} / $_ddddocr / $_onnx），跳过下载与安装"
+    # 依赖版本没变就不重装。判断依据是调用方传进来的「更新代码前读到的 ARG」，
+    # 与当前 Dockerfile 比——不依赖任何落盘的状态文件。
+    # 除了版本没变，还要确认依赖真的装过：空的 .venv（比如刚 python -m venv 建的）
+    # 同样满足「版本没变」，跳过就会留下一个没装包的 venv。pycurl 是必装项，用它当标志。
+    if [ -f .venv/pyvenv.cfg ] && [ -n "${_old_deps_stamp:-}" ] \
+        && [ "${_old_deps_stamp}" = "$(deps_stamp)" ] \
+        && ls .venv/lib/python*/site-packages/pycurl* >/dev/null 2>&1; then
+        echo "Info: Dockerfile 的依赖版本未变，跳过下载与安装"
         return 0
     fi
 
@@ -219,19 +221,11 @@ install_deps_alpine() {
     fi
 
     # 用 uv 的默认位置创建虚拟环境，与镜像里的路径一致（/usr/src/app/.venv）
-    # 用 pyproject 的 requires-python 决定解释器版本，让 uv 自己取（本地没有就下载）。
-    # 写死 python3 会绑到系统那个——旧镜像里是 3.11，和 cp314 的 wheel 对不上。
-    _pyver=$(sed -n 's/^requires-python = ">=\([0-9.]*\)".*/\1/p' pyproject.toml 2>/dev/null | head -1)
-    _pyver=${_pyver:-3.14}
-    # 系统解释器版本不够（旧镜像里是 3.11）时显式装一个：uv 自己下的解释器
-    # 放在 ~/.local/share/uv/python，容器可写层里能留住；重建容器会重装。
-    if ! uv python find "${_pyver}" >/dev/null 2>&1; then
-        echo "Info: 系统没有 Python ${_pyver}，用 uv 安装"
-        uv python install "${_pyver}" \
-            || { echo "Error: 安装 Python ${_pyver} 失败" >&2; return 1; }
-    fi
-    echo "Info: 创建/更新 .venv（python ${_pyver}）"
-    uv venv .venv --python "${_pyver}" --allow-existing \
+    # 解释器版本由仓库根目录的 .python-version 决定（uv 的默认来源），
+    # 版本范围由 pyproject 的 requires-python 约束，脚本不自己解析。
+    # 系统解释器不满足时 uv 会按 .python-version 下载一个。
+    uv python install || { echo "Error: 安装 Python 失败" >&2; return 1; }
+    uv venv .venv --allow-existing \
         || { echo "Error: 创建或更新 .venv 失败" >&2; return 1; }
 
     # requirements.txt 由 lock 导出，不提交到仓库，避免「lock 改了文件没跟上」。
@@ -293,8 +287,6 @@ install_deps_alpine() {
     rm -rf "$_tmp" "$_req"
     apk del .build_deps >/dev/null 2>&1
     rm -rf /var/cache/apk/* /usr/share/man/*
-    # 记下这次装的版本，下次热更新据此判断是否要重装
-    [ "$_rc" -eq 0 ] && deps_stamp > "$_stamp_file" 2>/dev/null
     if [ "$_rc" -ne 0 ]; then
         echo "Error: 依赖安装失败" >&2
         return $_rc
@@ -312,8 +304,11 @@ install_deps_glibc() {
         [ -x "$HOME/.local/bin/uv" ] && PATH="$HOME/.local/bin:$PATH" && export PATH
         command -v uv >/dev/null 2>&1 || { echo "Error: uv 安装失败" >&2; return 1; }
     fi
-    # glibc 上 PyPI 的 manylinux 轮子齐全，不需要我们的 musllinux 那份
-    uv sync --frozen || { echo "Error: uv sync 失败" >&2; return 1; }
+    # 与 Alpine 分支一致：解释器看 .python-version，范围看 requires-python，
+    # 差别只在依赖来源（glibc 上 PyPI 的 manylinux 轮子齐全）。
+    uv python install >/dev/null 2>&1 || true
+    uv sync --frozen --extra ocr \
+        || { echo "Error: uv sync 失败" >&2; return 1; }
     echo "Info: 提示——PyPI 的 pycurl 不含 IMPERSONATE 补丁，ja3 线在此形态下不可用"
     return 0
 }
@@ -356,11 +351,25 @@ list_remote_tags() {
 
 # 无 .git 时的代码更新：下载归档包覆盖代码，config/ 是挂载点不能动
 update_tarball() {
-    uri="https://gitee.com/qd-today/qd/repository/archive/${remoteversion}.tar.gz"
     tmp=$(mktemp -d)
-    echo "Info: 下载 ${uri}"
-    if ! wget -qO- "${uri}" | tar xz -C "${tmp}" 2>/dev/null; then
-        echo "Error: 下载或解压失败: ${uri}"
+    # gitee 会间歇限流（同一个 URL 刚才成功、这次 502），所以多源重试：
+    # GitHub 的 tarball API 优先，回退 gitee；每个源试两次。
+    _ok=0
+    for _base in \
+        "https://api.github.com/repos/qd-today/qd/tarball/${remoteversion}" \
+        "https://gitee.com/qd-today/qd/repository/archive/${remoteversion}.tar.gz"; do
+        for _try in 1 2; do
+            echo "Info: 下载 ${_base}（第 ${_try} 次）"
+            if wget -qO- --timeout=120 "${_base}" 2>/dev/null | tar xz -C "${tmp}" 2>/dev/null; then
+                _ok=1
+                break
+            fi
+            sleep 3
+        done
+        [ "$_ok" = "1" ] && break
+    done
+    if [ "$_ok" != "1" ]; then
+        echo "Error: 下载或解压失败: ${remoteversion}" >&2
         rm -rf "${tmp}"
         return 1
     fi
@@ -424,6 +433,7 @@ update() {
             # 强制更新
             remoteversion=${source_branch}
             echo -e "Info: 正在强制更新中, 请稍候..."
+            _old_deps_stamp=$(deps_stamp) && \
             update_git && \
             cleanup_legacy_files && \
             install_deps_uv && \
@@ -439,7 +449,8 @@ update() {
                     # 指定 commit：不参与版本比较。commit 没有版本号语义，可能比当前
                     # 新也可能旧，硬套 awk 的数字比较会把它误判成「降级」并要求交互确认。
                     echo -e "Info: 切换到 commit ${remoteversion}, 请稍候..."
-                    update_git && \
+                    _old_deps_stamp=$(deps_stamp) && \
+            update_git && \
                     cleanup_legacy_files && \
                     install_deps_uv && \
                     get_localversion && \
@@ -454,7 +465,8 @@ update() {
                         [yY][eE][sS]|[yY])
                             # 进入更新流程
                             echo -e "Info: 正在更新中, 请稍候..."
-                            update_git && \
+                            _old_deps_stamp=$(deps_stamp) && \
+            update_git && \
                             cleanup_legacy_files && \
                             install_deps_uv && \
                             get_localversion && \
@@ -472,7 +484,8 @@ update() {
                     esac
                 else
                     echo -e "Info: 正在强制切换至指定Tag版本: $1, 请稍候..."
-                    update_git && \
+                    _old_deps_stamp=$(deps_stamp) && \
+            update_git && \
                     cleanup_legacy_files && \
                     install_deps_uv && \
                     get_localversion && \
@@ -489,6 +502,7 @@ update() {
         remoteversion=$(list_remote_tags | sort -r | head -n 1)
         if [ "$(echo "$localversion" "$remoteversion" | awk '$1>=$2 {print 0} $1<$2 {print 1}')" == 1 ];then
             echo -e "Info: 当前版本: $localversion \nInfo: 新版本: $remoteversion \nInfo: 正在更新中, 请稍候..."
+            _old_deps_stamp=$(deps_stamp) && \
             update_git && \
             cleanup_legacy_files && \
             install_deps_uv && \
