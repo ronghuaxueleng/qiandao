@@ -26,6 +26,20 @@ set -o nounset
 __ScriptVersion="2023.06.14"
 __ScriptName="update.sh"
 source_branch="master"
+
+# 镜像源参数。默认全部指向官方，不设置时行为与之前完全一致。
+#   PIP_INDEX              pip / uv 的包索引
+#   GH_RELEASE_MIRROR      三仓 wheel 的前缀（如 https://ghproxy.example/），空 = 直连
+#   UV_PYTHON_INSTALL_MIRROR  uv python install 的来源
+#   UV_INSTALL_URL         官方 uv 安装脚本地址（仅 glibc 且本地无 uv 时用）
+: "${PIP_INDEX:=https://pypi.org/simple}"
+: "${GH_RELEASE_MIRROR:=}"
+: "${UV_PYTHON_INSTALL_MIRROR:=}"
+: "${UV_INSTALL_URL:=https://astral.sh/uv/install.sh}"
+
+# uv 自己认这两个环境变量，命令里就不用重复传参
+export UV_DEFAULT_INDEX="${PIP_INDEX}"
+[ -n "${UV_PYTHON_INSTALL_MIRROR}" ] && export UV_PYTHON_INSTALL_MIRROR
 alpine_mirrors="ustc"
 
 #-----------------------------------------------------------------------
@@ -77,59 +91,27 @@ update_out_alpine() {
 }
 
 set_alpine_mirrors() {
-    echo -e "Info: 当前 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories |  awk '!a[$0]++')"
+    echo -e "Info: 当前 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories | awk '!a[$0]++')"
+
+    # 只在这里维护「源名 -> host + 中文名」，下面的替换逻辑是通用的一条正则，
+    # 新增镜像源只改这张表，不用再复制四行 sed。
     case "$1" in
-        default | =default )
-            alpine_mirrors="default"
-            echo "Info: 正在设置 Alpine 镜像源为: 默认官方源"
-            sed -i 's/mirrors.tuna.tsinghua.edu.cn/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
-            sed -i 's/mirrors.ustc.edu.cn/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
-            sed -i 's/mirrors.cloud.tencent.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
-            sed -i 's/mirrors.aliyun.com/dl-cdn.alpinelinux.org/g' /etc/apk/repositories
-            echo -e "Info: 设置后的 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories |  awk '!a[$0]++')"
-            ;;
-        tsinghua | =tsinghua )
-            alpine_mirrors="tsinghua"
-            echo "Info: 正在设置 Alpine 镜像源为: 清华大学源"
-            sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-            sed -i 's/mirrors.ustc.edu.cn/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-            sed -i 's/mirrors.cloud.tencent.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-            sed -i 's/mirrors.aliyun.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-            echo -e "Info: 设置后的 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories |  awk '!a[$0]++')"
-            ;;
-        ustc | =ustc )
-            alpine_mirrors="ustc"
-            echo "Info: 正在设置 Alpine 镜像源为: 中国科学技术大学源"
-            sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-            sed -i 's/mirrors.tuna.tsinghua.edu.cn/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-            sed -i 's/mirrors.cloud.tencent.com/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-            sed -i 's/mirrors.aliyun.com/mirrors.ustc.edu.cn/g' /etc/apk/repositories
-            echo -e "Info: 设置后的 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories |  awk '!a[$0]++')"
-            ;;
-        tencent | =tencent )
-            alpine_mirrors="tencent"
-            echo "Info: 正在设置 Alpine 镜像源为: 腾讯云源"
-            sed -i 's/dl-cdn.alpinelinux.org/mirrors.cloud.tencent.com/g' /etc/apk/repositories
-            sed -i 's/mirrors.tuna.tsinghua.edu.cn/mirrors.cloud.tencent.com/g' /etc/apk/repositories
-            sed -i 's/mirrors.ustc.edu.cn/mirrors.cloud.tencent.com/g' /etc/apk/repositories
-            sed -i 's/mirrors.aliyun.com/mirrors.cloud.tencent.com/g' /etc/apk/repositories
-            echo -e "Info: 设置后的 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories |  awk '!a[$0]++')"
-            ;;
-        aliyun | =aliyun )
-            alpine_mirrors="aliyun"
-            echo "Info: 正在设置 Alpine 镜像源为: 阿里云源"
-            sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-            sed -i 's/mirrors.tuna.tsinghua.edu.cn/mirrors.aliyun.com/g' /etc/apk/repositories
-            sed -i 's/mirrors.ustc.edu.cn/mirrors.aliyun.com/g' /etc/apk/repositories
-            sed -i 's/mirrors.cloud.tencent.com/mirrors.aliyun.com/g' /etc/apk/repositories
-            echo -e "Info: 设置后的 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories |  awk '!a[$0]++')"
-            ;;
-        * )
-            echo "Error: 未知的 Alpine 镜像源: $1"
-            echo "支持的 Alpine 镜像源: default, tsinghua, ustc, tencent, aliyun"
-            exit 1
-            ;;
+        default | =default     ) _host="dl-cdn.alpinelinux.org";     _label="默认官方源" ;;
+        tsinghua | =tsinghua   ) _host="mirrors.tuna.tsinghua.edu.cn"; _label="清华大学源" ;;
+        ustc | =ustc           ) _host="mirrors.ustc.edu.cn";         _label="中国科学技术大学源" ;;
+        tencent | =tencent     ) _host="mirrors.cloud.tencent.com";   _label="腾讯云源" ;;
+        aliyun | =aliyun       ) _host="mirrors.aliyun.com";          _label="阿里云源" ;;
+        ""                     ) return 0 ;;
+        * ) echo "Error: 未知的 Alpine 镜像源 '$1'。可选: default tsinghua ustc tencent aliyun" >&2
+            return 1 ;;
     esac
+
+    alpine_mirrors="$1"
+    echo "Info: 正在设置 Alpine 镜像源为: ${_label}"
+    # 把文件里任何已知源换成目标源，一条正则覆盖全部组合
+    sed -i -E "s#https://(dl-cdn\.alpinelinux\.org|mirrors\.(tuna\.tsinghua\.edu\.cn|ustc\.edu\.cn|cloud\.tencent\.com|aliyun\.com))#https://${_host}#g" \
+        /etc/apk/repositories
+    echo -e "Info: 设置后的 Alpine 镜像源: \n$(grep -o 'https://[^ ]*/' /etc/apk/repositories | awk '!a[$0]++')"
 }
 
 is_musl() {
@@ -214,7 +196,7 @@ install_deps_alpine() {
         fi
         # alpine 的 py3-pip 标了 externally-managed（PEP 668），不加这个参数会被拒
         python3 -m pip install --no-cache-dir --break-system-packages uv \
-            --index-url "${PIP_MIRROR:-https://pypi.org/simple}" \
+            --index-url "${PIP_INDEX}" \
             || { echo "Error: pip install uv 失败" >&2; return 1; }
         command -v uv >/dev/null 2>&1 || { echo "Error: uv 不在 PATH 里" >&2; return 1; }
         echo "Info: uv 已通过 pip 安装（$(uv --version 2>&1 | head -1)）"
@@ -251,7 +233,7 @@ install_deps_alpine() {
     _fetch() {
         # 每个仓解压到自己的子目录：三个 tar 里的顶层目录都叫 wheels-<arch>，
         # 解压到同一处会互相覆盖，最后只剩一个仓的索引。
-        _url="https://github.com/qd-today/$1/releases/download/$2/$3-wheels-$_arch.tar.gz"
+        _url="${GH_RELEASE_MIRROR}https://github.com/qd-today/$1/releases/download/$2/$3-wheels-$_arch.tar.gz"
         echo "Info: 下载 $_url"
         mkdir -p "$_tmp/$1"
         wget -q "$_url" -O "$_tmp/$1/pkg.tar.gz" || { echo "Error: 下载 $1 失败" >&2; return 1; }
@@ -282,7 +264,7 @@ install_deps_alpine() {
     echo "Info: uv pip sync（按 requirements.txt 严格同步）"
     # shellcheck disable=SC2086
     uv pip sync --python .venv/bin/python --no-cache \
-        --index-url https://pypi.org/simple $_indexes "$_req"
+        --default-index "${PIP_INDEX}" $_indexes "$_req"
     _rc=$?
     rm -rf "$_tmp" "$_req"
     apk del .build_deps >/dev/null 2>&1
@@ -298,16 +280,27 @@ install_deps_glibc() {
     echo "Info: 检测到 glibc（Ubuntu / Debian 等），使用官方 uv 与 uv sync"
     if ! command -v uv >/dev/null 2>&1; then
         echo "Info: 安装 uv"
-        command -v curl >/dev/null 2>&1 && curl -LsSf https://astral.sh/uv/install.sh | sh \
-            || wget -qO- https://astral.sh/uv/install.sh | sh
+        command -v curl >/dev/null 2>&1 && curl -LsSf "${UV_INSTALL_URL}" | sh \
+            || wget -qO- "${UV_INSTALL_URL}" | sh
         # 官方安装脚本把 uv 放在 ~/.local/bin
         [ -x "$HOME/.local/bin/uv" ] && PATH="$HOME/.local/bin:$PATH" && export PATH
+        # astral.sh 并不总是可达（实测有连不上的时候），和 musl 分支一样用 pip 兜底
+        if ! command -v uv >/dev/null 2>&1; then
+            echo "Info: 官方脚本没装上 uv，改用 pip"
+            if ! python3 -m pip --version >/dev/null 2>&1; then
+                apt-get install -y -qq python3-pip >/dev/null 2>&1 \
+                    || { echo "Error: 装不上 python3-pip" >&2; return 1; }
+            fi
+            python3 -m pip install --no-cache-dir --break-system-packages uv \
+                --index-url "${PIP_INDEX}" \
+                || { echo "Error: pip install uv 失败" >&2; return 1; }
+        fi
         command -v uv >/dev/null 2>&1 || { echo "Error: uv 安装失败" >&2; return 1; }
     fi
     # 与 Alpine 分支一致：解释器看 .python-version，范围看 requires-python，
     # 差别只在依赖来源（glibc 上 PyPI 的 manylinux 轮子齐全）。
     uv python install >/dev/null 2>&1 || true
-    uv sync --frozen --extra ocr \
+    uv sync --frozen --extra ocr --default-index "${PIP_INDEX}" \
         || { echo "Error: uv sync 失败" >&2; return 1; }
     echo "Info: 提示——PyPI 的 pycurl 不含 IMPERSONATE 补丁，ja3 线在此形态下不可用"
     return 0
