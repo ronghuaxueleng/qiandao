@@ -52,7 +52,7 @@ QD —— 一个<b>HTTP请求定时任务自动执行框架</b> base on HAR Edit
 [docker-stars-url]: https://hub.docker.com/r/qdtoday/qd
 [docker-image-size-image]: https://img.shields.io/docker/image-size/qdtoday/qd/latest?style=flat&arch=amd64
 [docker-image-size-url]: https://hub.docker.com/r/qdtoday/qd
-[python-version-image]: https://img.shields.io/github/pipenv/locked/python-version/qd-today/qd
+[python-version-image]: https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fqd-today%2Fqd%2Fmaster%2Fpyproject.toml&query=project.requires-python&label=python&color=blue
 
 </div>
 
@@ -94,17 +94,7 @@ QD —— 一个<b>HTTP请求定时任务自动执行框架</b> base on HAR Edit
 
 [MIT](https://fastly.jsdelivr.net/gh/qd-today/qd@master/LICENSE) 许可协议
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fqd-today%2Fqd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fqd-today%2Fqd?ref=badge_large)
-
-容器镜像内随附第三方许可证文书，路径 `/usr/share/doc/third-party/`（每个组件仓一个子目录，
-含 `NOTICE.md`、`SOURCE-OFFER.md`、`licenses/`、`components.json`）。
-
-合规检查分两层承担：本仓库的 FOSSA 项目是 autobuild，覆盖 `pyproject.toml` / `uv.lock`
-这一层 Python 依赖；wheel 里由 auditwheel 收集进来的原生库（libcurl、libidn2、OpenCV 等）
-在 Python 依赖图中不可见，由生产这些 wheel 的三个组件仓
-（[onnxruntime](https://github.com/qd-today/onnxruntime-docker)、
-[ddddocr](https://github.com/qd-today/ddddocr-docker)、
-[pycurl](https://github.com/qd-today/pycurl-docker)）各自扫描并出具文书。
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B38165%2Fqd.svg?type=large)](https://app.fossa.com/projects/custom%2B38165%2Fqd?ref=badge_large)
 
 致谢
 ===========
@@ -160,4 +150,10 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 Stargazers over time
 ===========
 
-[![Stargazers over time](https://starchart.cc/qd-today/qd.svg)](https://starchart.cc/qd-today/qd)
+<a href="https://www.star-history.com/?repos=qd-today%2Fqd&type=date&legend=bottom-right">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=qd-today/qd&type=date&theme=dark&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=qd-today/qd&type=date&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=qd-today/qd&type=date&legend=bottom-right" />
+ </picture>
+</a>
